@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
-import gesture_recognizer_task from "./models/rockpaperscissors.task"
+import gesture_recognizer_task from "./models/shooting_resting_model.task"
 
 const Demo = () => {
     
