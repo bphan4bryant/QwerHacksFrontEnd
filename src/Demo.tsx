@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
 import gesture_recognizer_task from "./models/shooting_resting_model.task"
+import "./Demo.css"
 
 const Demo = () => {
     
@@ -17,6 +18,10 @@ const Demo = () => {
         const canvasElement = document.getElementById("output_canvas") as HTMLCanvasElement;
         const canvasCtx = canvasElement.getContext("2d");
         const gestureOutput = document.getElementById("gesture_output");
+
+        const flipVideo = async () => {
+            video.style.transform = 'scaleX(-1)';
+        }
 
         const createGestureRecognizer = async () => {
             const vision = await FilesetResolver.forVisionTasks(
@@ -85,7 +90,9 @@ const Demo = () => {
             await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
             }
             let nowInMs = Date.now();
+            
             if (video.currentTime !== lastVideoTime) {
+            flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
             }
@@ -150,7 +157,7 @@ const Demo = () => {
             <span className="mdc-button__label">ENABLE WEBCAM</span>
             </button>
             <div style={{position: "relative"}}>
-            <video id="webcam" autoPlay playsInline></video>
+            <video className="flipped-video" id="webcam" autoPlay playsInline></video>
             <canvas className="output_canvas" id="output_canvas" width="1280" height="720" style={{position: "absolute", left: "0px", top: "0px"}}></canvas>
             <p id='gesture_output' className="output"/>
             </div>
