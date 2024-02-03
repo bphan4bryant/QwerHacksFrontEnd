@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
-import gesture_recognizer_task from "./models/gesture_recognizer.task"
+import gesture_recognizer_task from "./models/rockpaperscissors.task"
 
 const Demo = () => {
     
@@ -25,7 +25,7 @@ const Demo = () => {
             gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
               baseOptions: {
                 modelAssetPath:
-                  "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+                  gesture_recognizer_task,
                 delegate: "GPU"
               },
               runningMode: "VIDEO"
@@ -140,24 +140,10 @@ const Demo = () => {
         <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet"/>
         <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
-        <h1>Recognize hand gestures using the MediaPipe HandGestureRecognizer task</h1>
+        <h1>Untitled Gun Game</h1>
 
         <section id="demos" className="invisible">
-        <h2>Demo: Recognize gestures</h2>
-        <p><em>Click on an image below</em> to identify the gestures in the image.</p>
-
-        <div className="detectOnClick">
-            <img src="https://assets.codepen.io/9177687/idea-gcbe74dc69_1920.jpg" crossOrigin="anonymous" title="Click to get recognize!" />
-            <p className="classification removed"/>
-        </div>
-        <div className="detectOnClick">
-            <img src="https://assets.codepen.io/9177687/thumbs-up-ga409ddbd6_1.png" crossOrigin="anonymous" title="Click to get recognize!" />
-            <p className="classification removed"/>
-        </div>
-
-        <h2>Demo: Webcam continuous hand gesture detection</h2>
-        <p>Use your hand to make gestures in front of the camera to get gesture classification. Click <b>enable webcam</b> below and grant access to the webcam if prompted.</p>
-
+            
         <div id="liveView" className="videoView">
             <button id="webcamButton" className="mdc-button mdc-button--raised">
             <span className="mdc-button__ripple"></span>
