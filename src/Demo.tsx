@@ -1,20 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
+import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
 import gesture_recognizer_task from "./models/shooting_resting_model.task"
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
     
-    const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
-    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, { onOpen: () => console.log("Websocket Connected")});
+    const [socketUrl, setSocketUrl] = useState('ws://localhost:1730');
+    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
     useEffect(() => {
         const demosSection = document.getElementById("demos");
         let gestureRecognizer: GestureRecognizer;
         let enableWebcamButton: HTMLButtonElement;
         let webcamRunning: Boolean = false;
-        const videoHeight = "540px";
-        const videoWidth = "720px";
+        const videoHeight = "360px";
+        const videoWidth = "480px";
         const video = document.getElementById("webcam");
         const canvasElement = document.getElementById("output_canvas") as HTMLCanvasElement;
         const canvasCtx = canvasElement.getContext("2d");
@@ -81,10 +81,13 @@ const Demo = () => {
         let shot = false
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
+            // Now let's start detecting the stream.
+            if (runningMode === "IMAGE") {
+            runningMode = "VIDEO";
+            await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
+            }
             let nowInMs = Date.now();
-            
             if (video.currentTime !== lastVideoTime) {
-            flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
             
@@ -114,6 +117,7 @@ const Demo = () => {
         
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            const drawingUtils = new DrawingUtils(canvasCtx);
         
             canvasElement.style.height = videoHeight;
             webcamElement.style.height = videoHeight;
@@ -121,6 +125,20 @@ const Demo = () => {
             webcamElement.style.width = videoWidth;
         
             if (results.landmarks) {
+            for (const landmarks of results.landmarks) {
+                drawingUtils.drawConnectors(
+                landmarks,
+                GestureRecognizer.HAND_CONNECTIONS,
+                {
+                    color: "#00FF00",
+                    lineWidth: 5
+                }
+                );
+                drawingUtils.drawLandmarks(landmarks, {
+                color: "#FF0000",
+                lineWidth: 2
+                });
+            }
             }
             canvasCtx.restore();
             // if (results.gestures.length > 0) {
@@ -156,7 +174,7 @@ const Demo = () => {
             <span className="mdc-button__label">ENABLE WEBCAM</span>
             </button>
             <div style={{position: "relative"}}>
-            <video className="flipped-video" id="webcam" autoPlay playsInline></video>
+            <video id="webcam" autoPlay playsInline></video>
             <canvas className="output_canvas" id="output_canvas" width="1280" height="720" style={{position: "absolute", left: "0px", top: "0px"}}></canvas>
             <p id='gesture_output' className="output"/>
             </div>
