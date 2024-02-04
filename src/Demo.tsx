@@ -88,6 +88,7 @@ const Demo = () => {
         
         let lastVideoTime = -1;
         let results = undefined;
+        let palm = undefined;
         let lastAction = "None"
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
@@ -97,10 +98,13 @@ const Demo = () => {
             flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+            palm = results.landmarks[1];
             if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && lastAction == "shooting"){
-                sendMessage({
-                    "message" : "dead"
-                });
+                sendMessage({"shoot": true, "position": [palm.x, palm.y, palm.z] });
+            }else{
+                sendMessage({"shoot": false, "position": [palm.x, palm.y, palm.z] });
+            }
+
             }
             if (results.gestures.length > 0) {
                 lastAction = results.gestures[0][0].categoryName
