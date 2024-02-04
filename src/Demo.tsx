@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
 import gesture_recognizer_task from "./models/shooting_resting_model.task"
-import "./Demo.css"
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
     
+    const [socketUrl, setSocketUrl] = useState('ws://localhost:1730');
+    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
     useEffect(() => {
         const demosSection = document.getElementById("demos");
@@ -100,7 +102,9 @@ const Demo = () => {
             flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-            console.log(results)
+            if (results.gestures[0][0].categoryName == "shooting"){
+                sendMessage("dead");
+            }
             }
         
             canvasCtx.save();
