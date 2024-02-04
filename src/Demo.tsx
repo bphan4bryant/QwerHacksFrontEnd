@@ -1,19 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
+import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
 import gesture_recognizer_task from "./models/shooting_resting_model.task"
-import "./Demo.css"
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
     
+    const [socketUrl, setSocketUrl] = useState('ws://localhost:1730');
+    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
     useEffect(() => {
         const demosSection = document.getElementById("demos");
         let gestureRecognizer: GestureRecognizer;
-        let runningMode = "IMAGE";
         let enableWebcamButton: HTMLButtonElement;
         let webcamRunning: Boolean = false;
-        const videoHeight = "540px";
-        const videoWidth = "720px";
+        const videoHeight = "360px";
+        const videoWidth = "480px";
         const video = document.getElementById("webcam");
         const canvasElement = document.getElementById("output_canvas") as HTMLCanvasElement;
         const canvasCtx = canvasElement.getContext("2d");
@@ -21,10 +22,6 @@ const Demo = () => {
 
         const flipVideo = async () => {
             video.style.transform = 'scaleX(-1)';
-        }
-
-        const printResult = async (res) => {
-            console.log(res)
         }
 
         const createGestureRecognizer = async () => {
@@ -37,8 +34,7 @@ const Demo = () => {
                   gesture_recognizer_task,
                 delegate: "GPU"
               },
-              runningMode: "LIVE_STREAM",
-              result_callback: printResult
+              runningMode: "VIDEO"
             });
             demosSection.classList.remove("invisible");
           };
@@ -64,14 +60,8 @@ const Demo = () => {
             alert("Please wait for gestureRecognizer to load");
             return;
             }
-        
-            if (webcamRunning === true) {
-            webcamRunning = false;
-            enableWebcamButton.innerText = "ENABLE PREDICTIONS";
-            } else {
-            webcamRunning = true;
-            enableWebcamButton.innerText = "DISABLE PREDICTIONS";
-            }
+            webcamRunning = true
+            enableWebcamButton.style.display = "none";
         
             // getUsermedia parameters.
             const constraints = {
@@ -87,6 +77,8 @@ const Demo = () => {
         
         let lastVideoTime = -1;
         let results = undefined;
+        let palm = undefined
+        let shot = false
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
             // Now let's start detecting the stream.
@@ -95,16 +87,37 @@ const Demo = () => {
             await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
             }
             let nowInMs = Date.now();
-            
             if (video.currentTime !== lastVideoTime) {
-            flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-            console.log(results)
+            
+            if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && shot == false){
+                console.log("BANG")
+                palm = results.landmarks[0][5]
+                // already shot
+                shot = true
+
+                sendMessage({
+                    "shoot" : true, "position" : [palm.x, palm.y, palm.z]
+                })
+            }
+            else if (results.gestures.length > 0) {
+                palm = results.landmarks[0][5]
+
+                if (results.gestures[0][0].categoryName == "shooting") {
+                    // ready to shoot
+                    shot = false
+                }
+
+                sendMessage({
+                    "shoot" : false, "position" : [palm.x, palm.y, palm.z]
+                })
+            }
             }
         
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            const drawingUtils = new DrawingUtils(canvasCtx);
         
             canvasElement.style.height = videoHeight;
             webcamElement.style.height = videoHeight;
@@ -112,20 +125,33 @@ const Demo = () => {
             webcamElement.style.width = videoWidth;
         
             if (results.landmarks) {
+            for (const landmarks of results.landmarks) {
+                drawingUtils.drawConnectors(
+                landmarks,
+                GestureRecognizer.HAND_CONNECTIONS,
+                {
+                    color: "#00FF00",
+                    lineWidth: 5
+                }
+                );
+                drawingUtils.drawLandmarks(landmarks, {
+                color: "#FF0000",
+                lineWidth: 2
+                });
+            }
             }
             canvasCtx.restore();
-            if (results.gestures.length > 0) {
-            gestureOutput.style.display = "block";
-            gestureOutput.style.width = videoWidth;
-            const categoryName = results.gestures[0][0].categoryName;
-            const categoryScore = parseFloat(
-                results.gestures[0][0].score * 100
-            ).toFixed(2);
-            const handedness = results.handednesses[0][0].displayName;
-            gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
-            } else {
+            // if (results.gestures.length > 0) {
+            // gestureOutput.style.display = "block";
+            // gestureOutput.style.width = videoWidth;
+            // const categoryName = results.gestures[0][0].categoryName;
+            // const categoryScore = parseFloat(
+            //     results.gestures[0][0].score * 100
+            // ).toFixed(2);
+            // const handedness = results.handednesses[0][0].displayName;
+            // gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
+            // } else {
             gestureOutput.style.display = "none";
-            }
             // Call this function again to keep predicting when the browser is ready.
             if (webcamRunning === true) {
             window.requestAnimationFrame(predictWebcam);
@@ -148,7 +174,7 @@ const Demo = () => {
             <span className="mdc-button__label">ENABLE WEBCAM</span>
             </button>
             <div style={{position: "relative"}}>
-            <video className="flipped-video" id="webcam" autoPlay playsInline></video>
+            <video id="webcam" autoPlay playsInline></video>
             <canvas className="output_canvas" id="output_canvas" width="1280" height="720" style={{position: "absolute", left: "0px", top: "0px"}}></canvas>
             <p id='gesture_output' className="output"/>
             </div>
