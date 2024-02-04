@@ -60,14 +60,8 @@ const Demo = () => {
             alert("Please wait for gestureRecognizer to load");
             return;
             }
-        
-            if (webcamRunning === true) {
-            webcamRunning = false;
-            enableWebcamButton.innerText = "ENABLE PREDICTIONS";
-            } else {
-            webcamRunning = true;
-            enableWebcamButton.innerText = "DISABLE PREDICTIONS";
-            }
+            webcamRunning = true
+            enableWebcamButton.style.display = "none";
         
             // getUsermedia parameters.
             const constraints = {
@@ -83,7 +77,8 @@ const Demo = () => {
         
         let lastVideoTime = -1;
         let results = undefined;
-        let lastAction = "None"
+        let palm = undefined
+        let shot = false
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
             let nowInMs = Date.now();
@@ -92,13 +87,28 @@ const Demo = () => {
             flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-            if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && lastAction == "shooting"){
+            
+            if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && shot == false){
+                console.log("BANG")
+                palm = results.landmarks[0][5]
+                // already shot
+                shot = true
+
                 sendMessage({
-                    "message" : "dead"
-                });
+                    "shoot" : true, "position" : [palm.x, palm.y, palm.z]
+                })
             }
-            if (results.gestures.length > 0) {
-                lastAction = results.gestures[0][0].categoryName
+            else if (results.gestures.length > 0) {
+                palm = results.landmarks[0][5]
+
+                if (results.gestures[0][0].categoryName == "shooting") {
+                    // ready to shoot
+                    shot = false
+                }
+
+                sendMessage({
+                    "shoot" : false, "position" : [palm.x, palm.y, palm.z]
+                })
             }
             }
         
@@ -113,18 +123,17 @@ const Demo = () => {
             if (results.landmarks) {
             }
             canvasCtx.restore();
-            if (results.gestures.length > 0) {
-            gestureOutput.style.display = "block";
-            gestureOutput.style.width = videoWidth;
-            const categoryName = results.gestures[0][0].categoryName;
-            const categoryScore = parseFloat(
-                results.gestures[0][0].score * 100
-            ).toFixed(2);
-            const handedness = results.handednesses[0][0].displayName;
-            gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
-            } else {
+            // if (results.gestures.length > 0) {
+            // gestureOutput.style.display = "block";
+            // gestureOutput.style.width = videoWidth;
+            // const categoryName = results.gestures[0][0].categoryName;
+            // const categoryScore = parseFloat(
+            //     results.gestures[0][0].score * 100
+            // ).toFixed(2);
+            // const handedness = results.handednesses[0][0].displayName;
+            // gestureOutput.innerText = `GestureRecognizer: ${categoryName}\n Confidence: ${categoryScore} %\n Handedness: ${handedness}`;
+            // } else {
             gestureOutput.style.display = "none";
-            }
             // Call this function again to keep predicting when the browser is ready.
             if (webcamRunning === true) {
             window.requestAnimationFrame(predictWebcam);
