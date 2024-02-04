@@ -11,7 +11,6 @@ const Demo = () => {
     useEffect(() => {
         const demosSection = document.getElementById("demos");
         let gestureRecognizer: GestureRecognizer;
-        let runningMode = "IMAGE";
         let enableWebcamButton: HTMLButtonElement;
         let webcamRunning: Boolean = false;
         const videoHeight = "540px";
@@ -23,10 +22,6 @@ const Demo = () => {
 
         const flipVideo = async () => {
             video.style.transform = 'scaleX(-1)';
-        }
-
-        const printResult = async (res) => {
-            console.log(res)
         }
 
         const createGestureRecognizer = async () => {
