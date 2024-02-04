@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      <Editor
+      {/* <Editor
         apiKey={import.meta.env.VITE_TINY_KEY}
         init={{
           plugins: 'ai tinycomments mentions anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed permanentpen footnotes advtemplate advtable advcode editimage tableofcontents mergetags powerpaste tinymcespellchecker autocorrect a11ychecker typography inlinecss',
@@ -23,8 +23,8 @@ function App() {
           placeholder: "Chat with your opponent!"
         }}
         // initialValue="Welcome to TinyMCE!"
-      />
-      <Demo/>
+      /> */}
+      <Demo />
     </>
   )
 }
