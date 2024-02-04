@@ -5,8 +5,8 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
     
-    const [socketUrl, setSocketUrl] = useState('ws://localhost:1730');
-    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
+    const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
+    const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl, { onOpen: () => console.log("Websocket Connected")});
 
     useEffect(() => {
         const demosSection = document.getElementById("demos");
@@ -39,8 +39,7 @@ const Demo = () => {
                   gesture_recognizer_task,
                 delegate: "GPU"
               },
-              runningMode: "LIVE_STREAM",
-              result_callback: printResult
+              runningMode: "VIDEO"
             });
             demosSection.classList.remove("invisible");
           };
@@ -89,21 +88,22 @@ const Demo = () => {
         
         let lastVideoTime = -1;
         let results = undefined;
+        let lastAction = "None"
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
-            // Now let's start detecting the stream.
-            if (runningMode === "IMAGE") {
-            runningMode = "VIDEO";
-            await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
-            }
             let nowInMs = Date.now();
             
             if (video.currentTime !== lastVideoTime) {
             flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
-            if (results.gestures[0][0].categoryName == "shooting"){
-                sendMessage("dead");
+            if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && lastAction == "shooting"){
+                sendMessage({
+                    "message" : "dead"
+                });
+            }
+            if (results.gestures.length > 0) {
+                lastAction = results.gestures[0][0].categoryName
             }
             }
         
