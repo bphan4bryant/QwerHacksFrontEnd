@@ -12,8 +12,8 @@ const Demo = () => {
         let runningMode = "IMAGE";
         let enableWebcamButton: HTMLButtonElement;
         let webcamRunning: Boolean = false;
-        const videoHeight = "360px";
-        const videoWidth = "480px";
+        const videoHeight = "540px";
+        const videoWidth = "720px";
         const video = document.getElementById("webcam");
         const canvasElement = document.getElementById("output_canvas") as HTMLCanvasElement;
         const canvasCtx = canvasElement.getContext("2d");
@@ -21,6 +21,10 @@ const Demo = () => {
 
         const flipVideo = async () => {
             video.style.transform = 'scaleX(-1)';
+        }
+
+        const printResult = async (res) => {
+            console.log(res)
         }
 
         const createGestureRecognizer = async () => {
@@ -33,7 +37,8 @@ const Demo = () => {
                   gesture_recognizer_task,
                 delegate: "GPU"
               },
-              runningMode: "VIDEO"
+              runningMode: "LIVE_STREAM",
+              result_callback: printResult
             });
             demosSection.classList.remove("invisible");
           };
@@ -95,6 +100,7 @@ const Demo = () => {
             flipVideo()
             lastVideoTime = video.currentTime;
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
+            console.log(results)
             }
         
             canvasCtx.save();
