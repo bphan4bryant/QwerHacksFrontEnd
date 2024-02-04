@@ -13,8 +13,8 @@ const Demo = () => {
         let gestureRecognizer: GestureRecognizer;
         let enableWebcamButton: HTMLButtonElement;
         let webcamRunning: Boolean = false;
-        const videoHeight = "360px";
-        const videoWidth = "480px";
+        const videoHeight = "720px";
+        const videoWidth = "1080px";
         const video = document.getElementById("webcam");
         const canvasElement = document.getElementById("output_canvas") as HTMLCanvasElement;
         const canvasCtx = canvasElement.getContext("2d");
@@ -81,14 +81,12 @@ const Demo = () => {
         let shot = false
         async function predictWebcam() {
             const webcamElement = document.getElementById("webcam");
-            // Now let's start detecting the stream.
-            if (runningMode === "IMAGE") {
-            runningMode = "VIDEO";
-            await gestureRecognizer.setOptions({ runningMode: "VIDEO" });
-            }
             let nowInMs = Date.now();
             if (video.currentTime !== lastVideoTime) {
             lastVideoTime = video.currentTime;
+
+            flipVideo()
+
             results = gestureRecognizer.recognizeForVideo(video, nowInMs);
             
             if (results.gestures.length > 0 && results.gestures[0][0].categoryName == "resting" && shot == false){
@@ -124,22 +122,22 @@ const Demo = () => {
             canvasElement.style.width = videoWidth;
             webcamElement.style.width = videoWidth;
         
-            if (results.landmarks) {
-            for (const landmarks of results.landmarks) {
-                drawingUtils.drawConnectors(
-                landmarks,
-                GestureRecognizer.HAND_CONNECTIONS,
-                {
-                    color: "#00FF00",
-                    lineWidth: 5
-                }
-                );
-                drawingUtils.drawLandmarks(landmarks, {
-                color: "#FF0000",
-                lineWidth: 2
-                });
-            }
-            }
+            // if (results.landmarks) {
+            // for (const landmarks of results.landmarks) {
+            //     drawingUtils.drawConnectors(
+            //     landmarks,
+            //     GestureRecognizer.HAND_CONNECTIONS,
+            //     {
+            //         color: "#00FF00",
+            //         lineWidth: 5
+            //     }
+            //     );
+            //     drawingUtils.drawLandmarks(landmarks, {
+            //     color: "#FF0000",
+            //     lineWidth: 2
+            //     });
+            // }
+            // }
             canvasCtx.restore();
             // if (results.gestures.length > 0) {
             // gestureOutput.style.display = "block";
@@ -164,7 +162,7 @@ const Demo = () => {
         <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet"/>
         <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
 
-        <h1>Untitled Gun Game</h1>
+        <h1>Trigger Finger Tango</h1>
 
         <section id="demos" className="invisible">
             
