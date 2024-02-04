@@ -5,7 +5,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
 
-    const [socketUrl, setSocketUrl] = useState('ws://localhost:1730');
+    const [socketUrl, setSocketUrl] = useState('ws://localhost:3001');
     const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
     useEffect(() => {
@@ -95,9 +95,9 @@ const Demo = () => {
                     // already shot
                     shot = true
 
-                    sendMessage({
+                    sendMessage(JSON.stringify({
                         "shoot": true, "position": [palm.x, palm.y, palm.z]
-                    })
+                    }))
                 }
                 else if (results.gestures.length > 0) {
                     palm = results.landmarks[0][5]
@@ -107,9 +107,9 @@ const Demo = () => {
                         shot = false
                     }
 
-                    sendMessage({
+                    sendMessage(JSON.stringify({
                         "shoot": false, "position": [palm.x, palm.y, palm.z]
-                    })
+                    }))
                 }
             }
 
