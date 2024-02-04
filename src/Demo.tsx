@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
-import gesture_recognizer_task from "./models/shooting_resting_model.task"
+import gesture_recognizer_task from "./models/shooting_resting-4.task"
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const Demo = () => {
