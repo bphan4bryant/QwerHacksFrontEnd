@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FilesetResolver, GestureRecognizer, DrawingUtils } from "@mediapipe/tasks-vision";
+import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
 import gesture_recognizer_task from "./models/shooting_resting_model.task"
 import "./Demo.css"
 
@@ -99,7 +99,6 @@ const Demo = () => {
         
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-            const drawingUtils = new DrawingUtils(canvasCtx);
         
             canvasElement.style.height = videoHeight;
             webcamElement.style.height = videoHeight;
@@ -107,20 +106,6 @@ const Demo = () => {
             webcamElement.style.width = videoWidth;
         
             if (results.landmarks) {
-            for (const landmarks of results.landmarks) {
-                drawingUtils.drawConnectors(
-                landmarks,
-                GestureRecognizer.HAND_CONNECTIONS,
-                {
-                    color: "#00FF00",
-                    lineWidth: 5
-                }
-                );
-                drawingUtils.drawLandmarks(landmarks, {
-                color: "#FF0000",
-                lineWidth: 2
-                });
-            }
             }
             canvasCtx.restore();
             if (results.gestures.length > 0) {
